@@ -13,23 +13,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Config
 @TeleOp(name = "WireFireFTC TeleOp",group = "Linear OpMode")
 public class WireFireTeleOp extends LinearOpMode {
-    private PIDController controller;
-
-    public static double p = 0, i = 0, d = 0;
-    public static double f = 0.73;
-
-    public static int target = 0;
-
-    private final double ticks_in_degree = 537.6 / 180.0;
-
-    private DcMotorEx arm_motor;
     //Used for Telemetry
     private ElapsedTime runtime = new ElapsedTime();
 
     //Used as Variables for the ARM
     int rotation = 0;
-    double INCREMENT = 1;
-    final int MAX_ROTATION = 2000;
+    double INCREMENT = 2;
+    final int MAX_ROTATION = 2200;
     final int MIN_ROTATION = 0;
 
     //Used as Variables for the Slides
@@ -46,15 +36,14 @@ public class WireFireTeleOp extends LinearOpMode {
     private DcMotor backright = null;
     private DcMotor leftSlide = null;
     private DcMotor rightSlide = null;
+    private DcMotorEx arm_motor = null;
 
-    //Create the objects for motors
+    //Create the objects for servos
     private CRServo intakeservo = null;
     //private Servo armservo = null;
 
     @Override
     public void runOpMode() {
-        controller = new PIDController(p, i, d);
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         // Initialize the Motors
         frontleft = hardwareMap.get(DcMotor.class, "frontleft");
         frontright = hardwareMap.get(DcMotor.class, "frontright");
@@ -79,6 +68,8 @@ public class WireFireTeleOp extends LinearOpMode {
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setDirection(DcMotor.Direction.REVERSE);
 
+        arm_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset encoder
+
         //ArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
@@ -88,6 +79,7 @@ public class WireFireTeleOp extends LinearOpMode {
         waitForStart();
         rightSlide.setTargetPosition(0);
         leftSlide.setTargetPosition(0);
+        arm_motor.setTargetPosition(0);
         runtime.reset();
 
         // Main control loop
@@ -116,6 +108,22 @@ public class WireFireTeleOp extends LinearOpMode {
             leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+            arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            arm_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            if(gamepad2.left_stick_y > 0.0) {
+                rotation += INCREMENT;
+                //height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
+                arm_motor.setTargetPosition(rotation);
+                arm_motor.setPower(1);
+            } else if (gamepad2.left_stick_y < 0) {
+                rotation -= INCREMENT;
+                arm_motor.setTargetPosition(rotation);
+                arm_motor.setPower(1);
+            } else{
+                // arm_motor.setPower(0);
+            }
+
             if(gamepad2.y) {
                 height += HEIGHT_INCREMENT;
                 height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
@@ -125,23 +133,12 @@ public class WireFireTeleOp extends LinearOpMode {
                 rightSlide.setPower(1);
             } else if (gamepad2.a) {
                 height -= HEIGHT_INCREMENT;
+                height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
                 leftSlide.setTargetPosition(height);
                 leftSlide.setPower(1);
                 rightSlide.setTargetPosition(height);
                 rightSlide.setPower(1);
-            } else{
-                leftSlide.setPower(0);
-                rightSlide.setPower(0);
             }
-            controller.setPID(p,i,d);
-            int armPos = arm_motor.getCurrentPosition();
-            double pid = controller.calculate(armPos, target);
-            double ff = Math.cos(Math.toRadians(target/ticks_in_degree)) * f;
-
-            double power = pid + ff;
-
-            arm_motor.setPower(power);
-            arm_motor.setPower((gamepad2.left_stick_y*PWR_MULTIPLIER));
 
             // Get gamepad inputs
             double forward = -gamepad1.left_stick_y; // Forward/backward movement
@@ -180,8 +177,8 @@ public class WireFireTeleOp extends LinearOpMode {
             telemetry.addData("height:", height);
             telemetry.addData("left slide ticks:", leftSlide.getCurrentPosition());
             telemetry.addData("right slide ticks:", rightSlide.getCurrentPosition());
-            telemetry.addData("pos", armPos);
-            telemetry.addData("target", target);
+            telemetry.addData("rotation:", rotation);
+            telemetry.addData("Arm motor ticks:", arm_motor.getCurrentPosition());
             telemetry.update();
         }
 
