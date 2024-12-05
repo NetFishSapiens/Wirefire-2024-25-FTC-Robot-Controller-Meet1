@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.util.ElapsedTime;
 @Config
 @TeleOp(name = "WireFireFTC TeleOp",group = "Linear OpMode")
@@ -76,6 +77,7 @@ public class WireFireTeleOp extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
+        //Setting all target positions to zero so it doesn't jitter
         waitForStart();
         rightSlide.setTargetPosition(0);
         leftSlide.setTargetPosition(0);
@@ -88,6 +90,7 @@ public class WireFireTeleOp extends LinearOpMode {
             telemetry.addData("rotation", rotation);
             telemetry.update();
 
+            //Used for the intake servo
             if(gamepad2.right_trigger > 0) {
                 intakeservo.setPower(1.5);
             }
@@ -103,6 +106,7 @@ public class WireFireTeleOp extends LinearOpMode {
                 ArmMotor.setTargetPosition(rotation);
             }*/
 
+            //Setting modes and ZeroPower
             leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -111,6 +115,18 @@ public class WireFireTeleOp extends LinearOpMode {
             arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             arm_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+            //Increases/Decreases PWR_MULTIPLIER on up/down
+            if(gamepad1.dpad_up) {
+                while(gamepad1.dpad_up) {
+                    PWR_MULTIPLIER += 0.01;
+                }
+            }
+            else if(gamepad1.dpad_down){
+                while(gamepad1.dpad_down){
+                    PWR_MULTIPLIER -= 0.01;
+                }
+            }
+            //Used for Arm_Motor see slide code for details
             if(gamepad2.left_stick_y > 0.0) {
                 rotation += INCREMENT;
                 //height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
@@ -124,6 +140,7 @@ public class WireFireTeleOp extends LinearOpMode {
                 // arm_motor.setPower(0);
             }
 
+            //Code for Slides using values to determine how long for the motors to be set until it reaches Target Position
             if(gamepad2.y) {
                 height += HEIGHT_INCREMENT;
                 height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
@@ -164,6 +181,14 @@ public class WireFireTeleOp extends LinearOpMode {
                 backRightPower /= max;
             }
 
+            //Clamp PWR_Multiplier
+            if(PWR_MULTIPLIER>1.0){
+                PWR_MULTIPLIER = 1.0;
+            }
+            else if(PWR_MULTIPLIER < -1.0){
+                PWR_MULTIPLIER = 0.25;
+            }
+
             // Set motor powers
             frontleft.setPower(frontLeftPower*PWR_MULTIPLIER);
             frontright.setPower(frontRightPower*PWR_MULTIPLIER);
@@ -179,6 +204,7 @@ public class WireFireTeleOp extends LinearOpMode {
             telemetry.addData("right slide ticks:", rightSlide.getCurrentPosition());
             telemetry.addData("rotation:", rotation);
             telemetry.addData("Arm motor ticks:", arm_motor.getCurrentPosition());
+            telemetry.addData("PWR_Multiplier", PWR_MULTIPLIER);
             telemetry.update();
         }
 

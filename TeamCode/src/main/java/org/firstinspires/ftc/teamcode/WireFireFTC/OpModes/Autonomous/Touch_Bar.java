@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 //Made similar to TeleOp d
@@ -15,8 +16,10 @@ public class Touch_Bar extends LinearOpMode {
     private DcMotor backleft;
     private DcMotor backright;
 
-    private CRServo intakeservo =null;
-    private Servo armservo = null;
+    private DcMotorEx arm_motor;
+
+    //private CRServo intakeservo =null;
+    //private Servo armservo = null;
     double rotation = 0.55;
     double INCREMENT = 0.002;
 
@@ -43,6 +46,8 @@ public class Touch_Bar extends LinearOpMode {
         backleft = hardwareMap.get(DcMotor.class, "backleft");
         backright = hardwareMap.get(DcMotor.class, "backright");
 
+        arm_motor = hardwareMap.get(DcMotorEx.class, "arm_motor");
+
         // Set motor directions if needed
         frontleft.setDirection(DcMotor.Direction.REVERSE);
         backleft.setDirection(DcMotor.Direction.REVERSE);
@@ -52,9 +57,9 @@ public class Touch_Bar extends LinearOpMode {
 
     private void initializeServos() {
         //Initialize the Servos
-        armservo = hardwareMap.get(Servo.class, "armservo");
+        //armservo = hardwareMap.get(Servo.class, "armservo");
         //Initialize the CR_Servo
-        intakeservo = hardwareMap.get(CRServo.class, "intakeservo");
+        //intakeservo = hardwareMap.get(CRServo.class, "intakeservo");
     }
 
     // Method to stop the motors
@@ -102,12 +107,17 @@ public class Touch_Bar extends LinearOpMode {
 
         sleep((long) (seconds * 1000));
     }
-    private void arm(double seconds, double G2_Y_LEFT_INPUT){
+    /*private void arm(double seconds, double G2_Y_LEFT_INPUT){
         if(Math.abs(G2_Y_LEFT_INPUT) > 0){
             rotation += INCREMENT * -G2_Y_LEFT_INPUT;
             rotation = Math.max(0, Math.min(1, rotation));
             armservo.setPosition(rotation);
         }
+        sleep((long) (seconds * 1000));
+    }*/
+    private void arm(double seconds, double G2_Y_LEFT_INPUT) {
+        arm_motor.setPower(G2_Y_LEFT_INPUT);
+        
         sleep((long) (seconds * 1000));
     }
 }
