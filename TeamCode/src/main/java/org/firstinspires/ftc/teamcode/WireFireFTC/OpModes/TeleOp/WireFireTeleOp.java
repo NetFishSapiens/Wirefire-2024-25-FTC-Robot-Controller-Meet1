@@ -12,14 +12,14 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.util.ElapsedTime;
 @Config
-@TeleOp(name = "WireFireFTC TeleOp",group = "Linear OpMode")
+@TeleOp(name = "WireFire-TeleOp",group = "Linear OpMode")
 public class WireFireTeleOp extends LinearOpMode {
     //Used for Telemetry
     private ElapsedTime runtime = new ElapsedTime();
 
     //Used as Variables for the ARM
     int rotation = 0;
-    double INCREMENT = 2;
+    double INCREMENT = 20;
     final int MAX_ROTATION = 2200;
     final int MIN_ROTATION = 0;
 
@@ -28,7 +28,7 @@ public class WireFireTeleOp extends LinearOpMode {
     double HEIGHT_INCREMENT = 20;
     final int MAX_HEIGHT = 2000;
     final int MIN_HEIGHT = 0;
-    double PWR_MULTIPLIER = 0.73;
+    double PWR_MULTIPLIER = 0.75;
 
     //Create the objects for motors
     private DcMotor frontleft = null;
@@ -92,10 +92,10 @@ public class WireFireTeleOp extends LinearOpMode {
 
             //Used for the intake servo
             if(gamepad2.right_trigger > 0) {
-                intakeservo.setPower(1.5);
+                intakeservo.setPower(2.5);
             }
             else if(gamepad2.left_trigger > 0) {
-                intakeservo.setPower(-1.5);
+                intakeservo.setPower(-2.5);
             }
             else {
                 intakeservo.setPower(0);
@@ -127,12 +127,12 @@ public class WireFireTeleOp extends LinearOpMode {
                 }
             }
             //Used for Arm_Motor see slide code for details
-            if(gamepad2.left_stick_y > 0.0) {
+            if(gamepad2.left_stick_y > 0.05) {
                 rotation += INCREMENT;
                 //height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
                 arm_motor.setTargetPosition(rotation);
                 arm_motor.setPower(1);
-            } else if (gamepad2.left_stick_y < 0) {
+            } else if (gamepad2.left_stick_y < -0.05) {
                 rotation -= INCREMENT;
                 arm_motor.setTargetPosition(rotation);
                 arm_motor.setPower(1);
