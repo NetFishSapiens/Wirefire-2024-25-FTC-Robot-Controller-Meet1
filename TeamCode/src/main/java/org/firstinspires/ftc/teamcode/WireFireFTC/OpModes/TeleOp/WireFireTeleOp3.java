@@ -1,19 +1,16 @@
 package org.firstinspires.ftc.teamcode.WireFireFTC.OpModes.TeleOp;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
 @Config
-@TeleOp(name = "WireFire-TeleOp",group = "Linear OpMode")
-public class WireFireTeleOp extends LinearOpMode {
+@TeleOp(name = "WireFire-TeleOp3",group = "Linear OpMode")
+public class WireFireTeleOp3 extends LinearOpMode {
     //Used for Telemetry
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime delay_time = new ElapsedTime();
@@ -21,8 +18,6 @@ public class WireFireTeleOp extends LinearOpMode {
     //Used as Variables for the ARM
     int rotation = 0;
     double INCREMENT = 20;
-    final int MAX_ROTATION = 2200;
-    final int MIN_ROTATION = 0;
 
     //Used as Variables for the Slides
     int height = 0;
@@ -101,11 +96,6 @@ public class WireFireTeleOp extends LinearOpMode {
             else {
                 intakeservo.setPower(0);
             }
-            /*if(Math.abs(gamepad2.left_stick_y) > 0){
-                rotation += INCREMENT * -gamepad2.left_stick_y;
-                rotation = Math.max(0, Math.min(1, rotation));
-                ArmMotor.setTargetPosition(rotation);
-            }*/
 
             //Setting modes and ZeroPower
             leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -123,54 +113,34 @@ public class WireFireTeleOp extends LinearOpMode {
             else if(gamepad1.dpad_down){
                     PWR_MULTIPLIER -= 0.01;
             }
+
             //Used for Arm_Motor see slide code for details
             if(gamepad2.left_stick_y > 0.05) {
                 rotation += INCREMENT;
-                //height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
-                arm_motor.setTargetPosition(rotation);
-                arm_motor.setPower(1);
+                arm(rotation);
             } else if (gamepad2.left_stick_y < -0.05) {
                 rotation -= INCREMENT;
-                arm_motor.setTargetPosition(rotation);
-                arm_motor.setPower(1);
-            } else{
-                // arm_motor.setPower(0);
+                arm(rotation);
             }
 
             //Code for Slides using values to determine how long for the motors to be set until it reaches Target Position
             if(gamepad2.y) {
                 height += HEIGHT_INCREMENT;
-                height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
-                leftSlide.setTargetPosition(height);
-                leftSlide.setPower(1);
-                rightSlide.setTargetPosition(height);
-                rightSlide.setPower(1);
+                Slide(height);
             } else if (gamepad2.a) {
                 height -= HEIGHT_INCREMENT;
-                height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
-                leftSlide.setTargetPosition(height);
-                leftSlide.setPower(1);
-                rightSlide.setTargetPosition(height);
-                rightSlide.setPower(1);
+                Slide(height);
             }
 
             if(gamepad2.dpad_up){
-                rotation = -1900;
-                arm_motor.setTargetPosition(rotation);
-                arm_motor.setPower(10.0);
-                height = 2000;
-                height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
-                leftSlide.setTargetPosition(height);
-                leftSlide.setPower(1);
-                rightSlide.setTargetPosition(height);
-                rightSlide.setPower(1);
+                arm(-1900);
+                Slide(2000);
                 movement( 0.1, -0.5, 0.0, 0.0);
                 stopMotors();
-                intake_servo(1.0, -0.09);
+                intake_servo(2.5,1.0, -0.09);
             } else if (gamepad2.dpad_down) {
-                rotation = -3700;
-                arm_motor.setTargetPosition(rotation);
-                arm_motor.setPower(1);
+                arm(-3700);
+                Slide(0);
             }
 
             // Get gamepad inputs
@@ -274,8 +244,25 @@ public class WireFireTeleOp extends LinearOpMode {
         backleft.setPower(0);
         backright.setPower(0);
     }
-    private void intake_servo(double seconds, double G2_Y_LEFT_INPUT) {
-        intakeservo.setPower(G2_Y_LEFT_INPUT);
+
+    private void intake_servo(double delay, double seconds, double G2_Y_LEFT_INPUT) {
+        delay_time.reset();
+        if(delay_time.time() > delay) {
+            intakeservo.setPower(G2_Y_LEFT_INPUT);
+        }
         sleep((long) (seconds * 1000));
+    }
+
+    private void Slide(int Height){
+        Height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
+        leftSlide.setTargetPosition(Height);
+        leftSlide.setPower(1);
+        rightSlide.setTargetPosition(Height);
+        rightSlide.setPower(1);
+    }
+
+    private void arm(int rot){
+        arm_motor.setTargetPosition(rot);
+        arm_motor.setPower(1);
     }
 }

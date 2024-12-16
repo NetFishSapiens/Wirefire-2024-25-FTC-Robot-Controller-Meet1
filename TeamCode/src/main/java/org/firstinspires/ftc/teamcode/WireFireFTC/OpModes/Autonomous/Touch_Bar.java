@@ -6,22 +6,33 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 //Made similar to TeleOp d
 @Autonomous(name = "Touch_Bar")
 public class Touch_Bar extends LinearOpMode {
+
+    private ElapsedTime delay_time = new ElapsedTime();
 
     private DcMotor frontleft;
     private DcMotor frontright;
     private DcMotor backleft;
     private DcMotor backright;
 
+    private DcMotor leftSlide = null;
+    private DcMotor rightSlide = null;
+
     private DcMotorEx arm_motor;
 
-    //private CRServo intakeservo =null;
-    //private Servo armservo = null;
-    double rotation = 0.55;
-    double INCREMENT = 0.002;
+    //Create the objects for servos
+    private CRServo intakeservo = null;
+
+    //Used as Variables for the Slides
+    int height = 0;
+    double HEIGHT_INCREMENT = 20;
+    final int MAX_HEIGHT = 2000;
+    final int MIN_HEIGHT = 0;
+    double PWR_MULTIPLIER = 0.75;
 
     @Override
     public void runOpMode() {
@@ -35,7 +46,7 @@ public class Touch_Bar extends LinearOpMode {
         stopMotors();
         movement( 0.5, -0.4, 0.0, 0.0);
         stopMotors();
-        arm(5.0, -0.5);
+        arm(-2000);
         stopMotors();
     }
 
@@ -46,6 +57,9 @@ public class Touch_Bar extends LinearOpMode {
         backleft = hardwareMap.get(DcMotor.class, "backleft");
         backright = hardwareMap.get(DcMotor.class, "backright");
 
+        leftSlide = hardwareMap.get(DcMotor.class, "leftSlide");
+        rightSlide = hardwareMap.get(DcMotor.class, "rightSlide");
+
         arm_motor = hardwareMap.get(DcMotorEx.class, "arm_motor");
 
         // Set motor directions if needed
@@ -53,13 +67,17 @@ public class Touch_Bar extends LinearOpMode {
         backleft.setDirection(DcMotor.Direction.REVERSE);
         frontright.setDirection(DcMotor.Direction.FORWARD);
         backright.setDirection(DcMotor.Direction.FORWARD);
+
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setDirection(DcMotor.Direction.REVERSE);
     }
 
     private void initializeServos() {
         //Initialize the Servos
         //armservo = hardwareMap.get(Servo.class, "armservo");
         //Initialize the CR_Servo
-        //intakeservo = hardwareMap.get(CRServo.class, "intakeservo");
+        intakeservo = hardwareMap.get(CRServo.class, "intakeservo");
     }
 
     // Method to stop the motors
@@ -107,17 +125,25 @@ public class Touch_Bar extends LinearOpMode {
 
         sleep((long) (seconds * 1000));
     }
-    /*private void arm(double seconds, double G2_Y_LEFT_INPUT){
-        if(Math.abs(G2_Y_LEFT_INPUT) > 0){
-            rotation += INCREMENT * -G2_Y_LEFT_INPUT;
-            rotation = Math.max(0, Math.min(1, rotation));
-            armservo.setPosition(rotation);
+
+    private void Slide(int Height){
+        Height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height));
+        leftSlide.setTargetPosition(Height);
+        leftSlide.setPower(1);
+        rightSlide.setTargetPosition(Height);
+        rightSlide.setPower(1);
+    }
+
+    private void arm(int rot){
+        arm_motor.setTargetPosition(rot);
+        arm_motor.setPower(1);
+    }
+
+    private void intake(double delay, double seconds, double G2_Y_LEFT_INPUT) {
+        delay_time.reset();
+        if(delay_time.time() > delay) {
+            intakeservo.setPower(G2_Y_LEFT_INPUT);
         }
-        sleep((long) (seconds * 1000));
-    }*/
-    private void arm(double seconds, double G2_Y_LEFT_INPUT) {
-        arm_motor.setPower(G2_Y_LEFT_INPUT);
-        
         sleep((long) (seconds * 1000));
     }
 }
