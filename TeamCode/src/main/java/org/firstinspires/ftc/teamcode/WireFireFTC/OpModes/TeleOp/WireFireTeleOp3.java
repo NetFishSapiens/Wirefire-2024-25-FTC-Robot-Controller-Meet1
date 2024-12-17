@@ -137,7 +137,7 @@ public class WireFireTeleOp3 extends LinearOpMode {
                 Slide(2000);
                 movement( 0.1, -0.5, 0.0, 0.0);
                 stopMotors();
-                intake_servo(2.5,1.0, -0.09);
+                intake_servo(2.5,3.0, -0.5);
             } else if (gamepad2.dpad_down) {
                 arm(-3700);
                 Slide(0);
